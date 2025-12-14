@@ -1,0 +1,5 @@
+spring:
+    application:
+        name: Game-Service
+    profiles:
+        active: dev

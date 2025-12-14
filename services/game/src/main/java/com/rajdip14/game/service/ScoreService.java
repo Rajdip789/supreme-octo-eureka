@@ -1,6 +1,7 @@
 package com.rajdip14.game.service;
 
 import com.rajdip14.game.model.PlayerScore;
+import com.rajdip14.game.utils.AppConstants;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -25,7 +26,7 @@ public class ScoreService {
 
         Message<PlayerScore> message = MessageBuilder
                 .withPayload(score)
-                .setHeader(TOPIC, "game-scores")
+                .setHeader(TOPIC, AppConstants.SCORE_TOPIC)
                 .build();
 
         kafkaTemplate.send(message);

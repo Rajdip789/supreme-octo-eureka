@@ -1,5 +1,6 @@
 package com.rajdip14.game.config;
 
+import com.rajdip14.game.utils.AppConstants;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -10,7 +11,7 @@ public class KafkaTopicConfig {
     @Bean
     public NewTopic gameScoreTopic() {
         return TopicBuilder
-                .name("game-scores")
+                .name(AppConstants.SCORE_TOPIC)
                 .build();
     }
 }
