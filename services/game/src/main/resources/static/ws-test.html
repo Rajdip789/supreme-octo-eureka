@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>STOMP Test</title>
+  <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.0.0/bundles/stomp.umd.min.js"></script>
+  <style>
+    .error { color: red; font-family: monospace; }
+    .success { color: green; }
+  </style>
+</head>
+<body>
+
+<h3>STOMP WebSocket Test</h3>
+<button onclick="sendScore()">Send Score</button>
+<button onclick="sendInvalidScore()">Send Invalid Score (Test Error)</button>
+
+<div id="log"></div>
+
+<script>
+  const logDiv = document.getElementById('log');
+
+  const client = new StompJs.Client({
+    brokerURL: "ws://localhost:8080/ws-scores",
+    debug: str => console.log(str),
+    reconnectDelay: 5000,
+  });
+
+  client.onConnect = frame => {
+    console.log("✅ CONNECTED", frame);
+    logDiv.innerHTML += `<p class="success">Connected to WebSocket</p>`;
+
+    // 1. SUBSCRIBE TO PRIVATE ERROR QUEUE
+    client.subscribe('/user/queue/errors', (message) => {
+      const errorData = JSON.parse(message.body);
+      console.error("⚠️ SERVER ERROR:", errorData);
+
+      logDiv.innerHTML += `
+        <p class="error">
+          <strong>Error (${errorData.status}):</strong> ${errorData.message} <br>
+          ${errorData.errors ? JSON.stringify(errorData.errors) : ''}
+        </p>`;
+    });
+  };
+
+  client.onStompError = frame => {
+    console.error("❌ STOMP protocol error", frame);
+  };
+
+  client.activate();
+
+  function sendScore() {
+    client.publish({
+      destination: "/game/players/14/scores",
+      body: JSON.stringify({
+        playerId: "14",
+        score: 120,
+        total_score: 1000,
+        timestamp: Date.now()
+      })
+    });
+  }
+
+  function sendInvalidScore() {
+    // This will trigger @Min(0) or @NotBlank validation errors
+    client.publish({
+      destination: "/game/players/0/scores",
+      body: JSON.stringify({
+        playerId: "", // Blank ID
+        score: -50,   // Invalid score
+        total_score: 9902,
+        timestamp: 12345
+      })
+    });
+  }
+</script>
+
+</body>
+</html>

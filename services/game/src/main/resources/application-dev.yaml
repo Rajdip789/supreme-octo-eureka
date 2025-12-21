@@ -2,21 +2,19 @@ spring:
   application:
     name: Game-Service
 
-kafka:
-  producer:
-    bootstrap-servers: localhost:9092
-    topic: game-events
-    key-serializer: org.apache.kafka.common.serialization.StringSerializer
-    value-serializer: org.apache.kafka.common.serialization.StringSerializer
-    properties:
-      spring.json.add.type.headers: false
+  kafka:
+    producer:
+      bootstrap-servers: localhost:9092
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        enable.idempotence: true
+        acks: all
+        retries: 2147483647
+        linger.ms: 5
+        batch.size: 32768
+        spring.json.add.type.headers: false
 
-  consumer:
-    bootstrap-servers: localhost:9092
-    topic: game-events
-    group-id: game-events-group
-    key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-    value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-    properties:
-      spring.json.trusted.packages: "*"
-      spring.json.use.type.headers: false
+app:
+  websocket:
+    allowed-origins: "http://localhost:[*]"

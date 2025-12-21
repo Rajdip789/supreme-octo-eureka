@@ -1,11 +1,13 @@
 package com.rajdip14.game.model;
 
+import lombok.Builder;
 import lombok.Data;
 
 @Data
-public class PlayerScore {
+@Builder
+public class ScoreEvent {
     private String playerId;
     private int score;
-    private int total_score;
-    private long timestamp;
+    private int totalScore;
+    private Long timestamp;
 }
