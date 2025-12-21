@@ -2,172 +2,52 @@ version: "3.8"
 
 networks:
   kafka-net:
-    driver: bridge              # Single bridge network for all Kafka nodes
+    driver: bridge                     # Single bridge network for Kafka
 
 services:
-
-  # ===============================
-  # Controllers (Metadata / Raft)
-  # ===============================
-
-  controller-1:
+  kafka:
     image: confluentinc/cp-kafka:7.6.0
-    container_name: controller-1
-    hostname: controller-1
-    networks:
-      - kafka-net
-    environment:
-      KAFKA_NODE_ID: 1                                               # Unique node id (must be unique across cluster)
-      KAFKA_PROCESS_ROLES: controller                                # Run this node as controller only
-      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@controller-1:9093,2@controller-2:9093,3@controller-3:9093  # Raft quorum members
-      KAFKA_LISTENERS: CONTROLLER://controller-1:9093                # Listener used only for controller Raft traffic
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT     # Protocol mapping for controller listener
-      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER                    # Identifies controller listener
-      CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
-      KAFKA_CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk                         # Static cluster id shared by all nodes
-      KAFKA_LOG_DIRS: /var/lib/kafka/data   # Where metadata + logs are stored
-
-    volumes:
-      - controller-1-data:/var/lib/kafka/data                         # Persistent metadata storage
-
-  controller-2:
-    image: confluentinc/cp-kafka:7.6.0
-    container_name: controller-2
-    hostname: controller-2
-    networks:
-      - kafka-net
-    environment:
-      KAFKA_NODE_ID: 2                                               # Unique node id
-      KAFKA_PROCESS_ROLES: controller                                # Controller-only node
-      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@controller-1:9093,2@controller-2:9093,3@controller-3:9093  # Same quorum list
-      KAFKA_LISTENERS: CONTROLLER://controller-2:9093                # Controller Raft listener
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT     # Security protocol
-      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER                    # Controller listener name
-      CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
-      KAFKA_CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk                         # Same cluster id
-      KAFKA_LOG_DIRS: /var/lib/kafka/data   # Where metadata + logs are stored
-
-    volumes:
-      - controller-2-data:/var/lib/kafka/data                         # Persistent metadata storage
-
-  controller-3:
-    image: confluentinc/cp-kafka:7.6.0
-    container_name: controller-3
-    hostname: controller-3
-    networks:
-      - kafka-net
-    environment:
-      KAFKA_NODE_ID: 3                                               # Unique node id
-      KAFKA_PROCESS_ROLES: controller                                # Controller-only node
-      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@controller-1:9093,2@controller-2:9093,3@controller-3:9093  # Quorum voters
-      KAFKA_LISTENERS: CONTROLLER://controller-3:9093                # Raft communication listener
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT     # Protocol mapping
-      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER                    # Controller listener
-      CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
-      KAFKA_CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk                         # Same cluster id
-      KAFKA_LOG_DIRS: /var/lib/kafka/data   # Where metadata + logs are stored
-
-    volumes:
-      - controller-3-data:/var/lib/kafka/data                         # Persistent metadata storage
-
-  # ===============================
-  # Brokers (Client + Data traffic)
-  # ===============================
-
-  broker-1:
-    image: confluentinc/cp-kafka:7.6.0
-    container_name: broker-1
-    hostname: broker-1
+    container_name: kafka
+    hostname: kafka
     networks:
       - kafka-net
     ports:
-      - "9092:9092"                                                  # Expose broker to host
+      - "9092:9092"                    # Expose Kafka to host (localhost:9092)
     environment:
-      KAFKA_NODE_ID: 4                                               # Unique broker id (different from controllers)
-      KAFKA_PROCESS_ROLES: broker                                    # Run as broker only
-      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
-      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@controller-1:9093,2@controller-2:9093,3@controller-3:9093  # Controllers to connect to
-      KAFKA_LISTENERS: INTERNAL://broker-1:29092,EXTERNAL://0.0.0.0:9092  # Internal + external listeners
-      KAFKA_ADVERTISED_LISTENERS: INTERNAL://broker-1:29092,EXTERNAL://localhost:9092  # Addresses advertised to clients
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT  # Listener protocol mapping
-      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL                     # Listener used for broker-to-broker traffic
-      CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
-      KAFKA_CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk                         # Same cluster id
+      # -----------------------------
+      # KRaft core configuration
+      # -----------------------------
+      KAFKA_NODE_ID: 1                                     # Unique node ID (single node)
+      KAFKA_PROCESS_ROLES: broker,controller               # Single node acts as both broker and controller
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093         # Controller quorum (single node)
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER          # Name of controller listener
+      CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk                     # Static cluster ID (same on every restart)
+      KAFKA_CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk               # Required by Kafka itself
 
-      KAFKA_DEFAULT_REPLICATION_FACTOR: 3                             # Default topic replication across 3 brokers
-      KAFKA_MIN_INSYNC_REPLICAS: 2                                    # Minimum replicas required for writes
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3                      # Internal offsets topic replication
-      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3              # Transaction log replication
-      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2                          # Minimum ISR for transaction log
-      KAFKA_LOG_DIRS: /var/lib/kafka/data   # Where metadata + logs are stored
+      # -----------------------------
+      # Listener configuration
+      # -----------------------------
+      KAFKA_LISTENERS: INTERNAL://kafka:29092,CONTROLLER://kafka:9093,EXTERNAL://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:29092,EXTERNAL://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+
+      # -----------------------------
+      # Storage configuration
+      # -----------------------------
+      KAFKA_LOG_DIRS: /var/lib/kafka/data                  # Kafka log & metadata storage directory
+
+      # -----------------------------
+      # Topic & replication defaults (single node)
+      # -----------------------------
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 1                  # Only one broker exists
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1            # Internal offsets topic
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1    # Transaction log replication
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1               # Min ISR for transactions
+      KAFKA_MIN_INSYNC_REPLICAS: 1                          # Required ISR for produce
 
     volumes:
-      - broker-1-data:/var/lib/kafka/data                             # Persistent log storage
-
-  broker-2:
-    image: confluentinc/cp-kafka:7.6.0
-    container_name: broker-2
-    hostname: broker-2
-    networks:
-      - kafka-net
-    ports:
-      - "9094:9094"                                                  # Expose broker to host
-    environment:
-      KAFKA_NODE_ID: 5                                               # Unique broker id
-      KAFKA_PROCESS_ROLES: broker                                    # Broker-only role
-      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
-      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@controller-1:9093,2@controller-2:9093,3@controller-3:9093  # Controller quorum
-      KAFKA_LISTENERS: INTERNAL://broker-2:29092,EXTERNAL://0.0.0.0:9094  # Internal + external listeners
-      KAFKA_ADVERTISED_LISTENERS: INTERNAL://broker-2:29092,EXTERNAL://localhost:9094  # Client-visible addresses
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT  # Protocol mapping
-      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL                     # Inter-broker communication listener
-      CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
-      KAFKA_CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk                         # Same cluster id
-
-      KAFKA_DEFAULT_REPLICATION_FACTOR: 3                             # Default replication
-      KAFKA_MIN_INSYNC_REPLICAS: 2                                    # Required ISR count
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3                      # Offsets topic replication
-      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3              # Transaction log replication
-      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2                          # Minimum ISR
-      KAFKA_LOG_DIRS: /var/lib/kafka/data   # Where metadata + logs are storedy
-
-    volumes:
-      - broker-2-data:/var/lib/kafka/data                             # Persistent log storage
-
-  broker-3:
-    image: confluentinc/cp-kafka:7.6.0
-    container_name: broker-3
-    hostname: broker-3
-    networks:
-      - kafka-net
-    ports:
-      - "9096:9096"                                                  # Expose broker to host
-    environment:
-      KAFKA_NODE_ID: 6                                               # Unique broker id
-      KAFKA_PROCESS_ROLES: broker                                    # Broker-only role
-      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
-      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@controller-1:9093,2@controller-2:9093,3@controller-3:9093  # Controller quorum
-      KAFKA_LISTENERS: INTERNAL://broker-3:29092,EXTERNAL://0.0.0.0:9096  # Internal + external listeners
-      KAFKA_ADVERTISED_LISTENERS: INTERNAL://broker-3:29092,EXTERNAL://localhost:9096  # Client-visible addresses
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT  # Protocol mapping
-      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL                     # Inter-broker communication
-      CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
-      KAFKA_CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk                         # Same cluster id
-
-      KAFKA_DEFAULT_REPLICATION_FACTOR: 3                             # Default replication
-      KAFKA_MIN_INSYNC_REPLICAS: 2                                    # Required ISR
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3                      # Offsets replication
-      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3              # Tx log replication
-      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2                          # Minimum ISR
-      KAFKA_LOG_DIRS: /var/lib/kafka/data   # Where metadata + logs are stored
-
-    volumes:
-      - broker-3-data:/var/lib/kafka/data                             # Persistent log storage
+      - kafka-data:/var/lib/kafka/data                     # Persist Kafka data
 
 volumes:
-  controller-1-data:
-  controller-2-data:
-  controller-3-data:
-  broker-1-data:
-  broker-2-data:
-  broker-3-data:
+  kafka-data:
