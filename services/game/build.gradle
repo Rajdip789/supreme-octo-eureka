@@ -6,7 +6,7 @@ plugins {
 
 group = 'com.rajdip14'
 version = '0.0.1-SNAPSHOT'
-description = 'Game service of leaderboard project '
+description = 'Game service of leaderboard project'
 
 java {
 	toolchain {

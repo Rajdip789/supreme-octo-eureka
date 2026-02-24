@@ -27,7 +27,7 @@ public class ScoreService {
             ScoreEvent scoreEvent = ScoreEvent.builder()
                     .playerId(playerId)
                     .score(scoreRequest.score())
-                    .totalScore(scoreRequest.total_score())
+                    .eventId(java.util.UUID.randomUUID())
                     .timestamp(System.currentTimeMillis())
                     .build();
 

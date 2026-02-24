@@ -8,10 +8,7 @@ public record PlayerScoreRequest(
         String playerId,
 
         @Min(value = 0, message = "score must be >= 0")
-        int score,
+        Integer score,
 
-        @Min(value = 0, message = "total_score must be >= 0")
-        int total_score,
-
-        Long timestamp
+        String gameId   // optional for future use
 ) {}
