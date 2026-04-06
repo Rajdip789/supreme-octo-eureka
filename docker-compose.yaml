@@ -7,7 +7,7 @@ networks:
 services:
   kafka:
     image: confluentinc/cp-kafka:7.6.0
-    container_name: kafka
+    container_name: leaderboard-kafka
     hostname: kafka
     networks:
       - kafka-net
@@ -49,5 +49,25 @@ services:
     volumes:
       - kafka-data:/var/lib/kafka/data                     # Persist Kafka data
 
+  redis:
+    image: redis:7.4-alpine
+    container_name: leaderboard-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    command: >
+      redis-server
+      --appendonly yes
+      --appendfsync everysec
+      --save 60 1000
+      --maxmemory 1gb
+      --maxmemory-policy allkeys-lru
+      --loglevel warning
+      --requirepass rajdip14
+    volumes:
+      - redis-data:/data
+
 volumes:
   kafka-data:
+  redis-data:
+    driver: local
