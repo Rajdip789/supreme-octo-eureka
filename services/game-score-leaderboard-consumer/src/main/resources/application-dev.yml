@@ -1,0 +1,29 @@
+spring:
+  application:
+    name: game-score-leaderboard-consumer
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: game-score-leaderboard-consumer
+
+      key-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+
+      properties:
+        spring.deserializer.key.delegate.class: org.apache.kafka.common.serialization.StringDeserializer
+        spring.deserializer.value.delegate.class: org.springframework.kafka.support.serializer.JsonDeserializer
+
+        spring.json.value.default.type: com.rajdip14.game_score_leaderboard_consumer.model.GameScoreEvent
+        spring.json.trusted.packages: com.rajdip14.*
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password: rajdip14
+      timeout: 2000
+      lettuce:
+        pool:
+          max-active: 20
+          max-idle: 10
+          min-idle: 2
+          max-wait: 2000

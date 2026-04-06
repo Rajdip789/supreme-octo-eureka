@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: game-score-leaderboard-consumer
+  profiles:
+    active: dev
