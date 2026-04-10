@@ -1,0 +1,15 @@
+spring:
+  application:
+    name: leaderboard_aggregator
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password: rajdip14
+      timeout: 2000
+      lettuce:
+        pool:
+          max-active: 20
+          max-idle: 10
+          min-idle: 2
+          max-wait: 2000
