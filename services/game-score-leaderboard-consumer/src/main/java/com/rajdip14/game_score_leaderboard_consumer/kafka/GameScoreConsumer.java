@@ -7,10 +7,10 @@ import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.List;
 
-import static com.rajdip14.game_score_leaderboard_consumer.utils.AppConstants.LEADERBOARD_KEY;
-import static com.rajdip14.game_score_leaderboard_consumer.utils.AppConstants.PROCESSED_SET;
+import static com.rajdip14.game_score_leaderboard_consumer.utils.AppConstants.*;
 
 @Slf4j
 @Service
@@ -30,14 +30,16 @@ public class GameScoreConsumer {
             log.info("Received score event: {}", event.toString());
 
             List<String> keys = List.of(
-                    PROCESSED_SET,
-                    LEADERBOARD_KEY
+                    PROCESSED_SORTED_SET,
+                    LEADERBOARD_KEY,
+                    DIRTY_FLAG_KEY
             );
 
             List<String> args = List.of(
                     event.eventId().toString(),
                     event.playerId(),
-                    event.score().toString()
+                    event.score().toString(),
+                    String.valueOf(Instant.now().getEpochSecond())
             );
 
             Long result = redisTemplate.execute(updateScoreScript, keys, args.toArray());
