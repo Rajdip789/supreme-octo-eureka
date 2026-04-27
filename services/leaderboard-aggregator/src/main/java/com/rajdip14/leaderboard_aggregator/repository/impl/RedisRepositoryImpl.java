@@ -8,7 +8,7 @@ import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Repository;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.List;
 import java.util.Set;
@@ -20,7 +20,7 @@ import static com.rajdip14.leaderboard_aggregator.utils.AppConstants.*;
 @RequiredArgsConstructor
 public class RedisRepositoryImpl implements RedisRepository {
 
-    private final ObjectMapper objectMapper;
+    private final JsonMapper jsonMapper;
     private final RedisTemplate<String, String> redisTemplate;
 
     /*
@@ -71,7 +71,7 @@ public class RedisRepositoryImpl implements RedisRepository {
             for (PlayerProfile profile : profiles) {
                 try {
                     String key = PROFILE_KEY_PREFIX + profile.getPlayerId();
-                    String value = objectMapper.writeValueAsString(profile);
+                    String value = jsonMapper.writeValueAsString(profile);
 
                     connection.stringCommands().setEx(
                             key.getBytes(),

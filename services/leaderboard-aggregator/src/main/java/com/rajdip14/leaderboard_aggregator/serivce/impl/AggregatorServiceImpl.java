@@ -10,7 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 import java.util.*;
 
 import static com.rajdip14.leaderboard_aggregator.utils.AppConstants.LEADERBOARD_SIZE;
@@ -21,7 +21,7 @@ import static com.rajdip14.leaderboard_aggregator.utils.AppConstants.UNKNOWN_PRO
 @RequiredArgsConstructor
 public class AggregatorServiceImpl implements AggregatorService {
 
-    private final ObjectMapper objectMapper;
+    private final JsonMapper jsonMapper;
     private final ProfileService profileService;
     private final RedisRepository redisRepository;
 
@@ -65,7 +65,7 @@ public class AggregatorServiceImpl implements AggregatorService {
             }
 
             // 5️⃣ Store aggregated leaderboard
-            String json = objectMapper.writeValueAsString(result);
+            String json = jsonMapper.writeValueAsString(result);
             redisRepository.cacheLeaderboardSnapshot(json);
 
             log.info("Leaderboard cache updated successfully");

@@ -6,7 +6,7 @@ import com.rajdip14.leaderboard_aggregator.serivce.ProfileService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -19,7 +19,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class ProfileServiceImpl implements ProfileService {
 
-    private final ObjectMapper objectMapper;
+    private final JsonMapper jsonMapper;
     private final RedisRepository redisRepository;
 
     @Override
@@ -38,7 +38,7 @@ public class ProfileServiceImpl implements ProfileService {
 
             if (profileJson != null) {
                 try {
-                    PlayerProfile profile = objectMapper.readValue(profileJson, PlayerProfile.class);
+                    PlayerProfile profile = jsonMapper.readValue(profileJson, PlayerProfile.class);
                     profileMap.put(playerId, profile);
                 } catch (Exception e) {
                     log.error("Error parsing profile for {}", playerId, e);
