@@ -7,8 +7,17 @@ import java.util.List;
 import java.util.Set;
 
 public interface RedisRepository {
-    Set<ZSetOperations.TypedTuple<String>> getTopPlayers(int limit);
+
+    boolean isDirty();
+    void clearDirtyFlag();
+
+    String getLastLeaderboardHash();
+    void saveLastLeaderboardHash(String newHash);
     void cacheLeaderboardSnapshot(String data);
+
+    Set<ZSetOperations.TypedTuple<String>> getTopPlayers(int limit);
+
     List<String> getProfiles(List<String> playerIds);
     void saveProfiles(List<PlayerProfile> profiles);
+
 }
