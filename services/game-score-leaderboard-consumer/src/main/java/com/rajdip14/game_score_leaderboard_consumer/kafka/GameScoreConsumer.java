@@ -24,7 +24,7 @@ public class GameScoreConsumer {
         this.updateScoreScript = updateScoreScript;
     }
 
-    @KafkaListener(topics = "game-scores")
+    @KafkaListener(topics = SCORE_TOPIC)
     public void consumeScore(GameScoreEvent event) {
         try {
             log.info("Received score event: {}", event.toString());

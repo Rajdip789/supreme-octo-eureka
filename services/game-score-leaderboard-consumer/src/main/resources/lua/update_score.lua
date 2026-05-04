@@ -18,11 +18,11 @@ end
 -- 2. remove events older than 12h to prevent memory leak (current timestamp - 43200 seconds)
 -- 3. set expiration to 25 hours to ensure old events are cleaned up
 -- 4. increment leaderboard score
--- 5. set dirty flag with TTL to indicate leaderboard has been updated
+-- 5. set dirty flag with no TTL (as in case of a crash, the next aggregation will just sess it again and process and cleans up)
 redis.call("ZADD", KEYS[1], ARGV[4], ARGV[1])
 redis.call("ZREMRANGEBYSCORE", KEYS[1], 0, ARGV[4] - 43200)
 redis.call("EXPIRE", KEYS[1], 90000)
 redis.call("ZINCRBY", KEYS[2], ARGV[3], ARGV[2])
-redis.call("SET", KEYS[3], "1", "EX", 30)
+redis.call("SET", KEYS[3], "1")
 
 return 1
