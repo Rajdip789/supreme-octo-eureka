@@ -10,11 +10,11 @@ public class AppConstants {
     public static final int    PROFILE_CACHE_TTL_SECONDS    = 600;
     public static final String UNKNOWN_PROFILE              = "Unknown";
 
-    public static final String LEADERBOARD_CHANGE_TOPIC = "leaderboard.snapshot.updated";
+    public static final String LEADERBOARD_CHANGE_TOPIC     = "leaderboard.snapshot.updated";
 
     public static final String DIRTY_FLAG_KEY               = "leaderboard:dirty";
-    public static final String LEADERBOARD_CACHE_HASH_KEY   = "leaderboard:snapshot:hash";
+    public static final String LEADERBOARD_CACHE_HASH_KEY   = "leaderboard:topk:hash";
     public static final String LEADERBOARD_KEY              = "leaderboard:scores";
-    public static final String LEADERBOARD_CACHE_KEY        = "leaderboard:snapshot:latest";
-    public static final String PROFILE_KEY_PREFIX           = "leaderboard:player:profile:";
+    public static final String LEADERBOARD_CACHE_KEY        = "leaderboard:topk:cache";
+    public static final String PROFILE_KEY_PREFIX           = "leaderboard:player:";
 }
